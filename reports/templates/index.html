@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MM Triage Tool — Case Directory</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@700&display=swap');
+:root {
+  --bg: #090b0e; --s1: #0f1318; --s2: #151a20; --s3: #1b2028;
+  --cyber: #00d4ff; --t1: #e2e8f0; --t2: #94a3b8; --t3: #475569;
+}
+body { background: var(--bg); color: var(--t1); font-family: 'JetBrains Mono', monospace; padding: 40px; display: flex; justify-content: center; }
+.container { width: 100%; max-width: 900px; }
+.header { display: flex; align-items: center; gap: 15px; margin-bottom: 40px; border-bottom: 1px solid #ffffff18; padding-bottom: 20px; }
+.header h1 { font-family: 'Syne', sans-serif; color: var(--cyber); font-size: 24px; letter-spacing: 2px; }
+.header p { color: var(--t3); font-size: 12px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.case-card { background: var(--s1); border: 1px solid #ffffff0d; border-radius: 8px; padding: 20px; text-decoration: none; color: inherit; transition: all 0.2s; display: block; position: relative; overflow: hidden; }
+.case-card:hover { border-color: #00d4ff40; background: var(--s2); transform: translateY(-2px); box-shadow: 0 10px 20px #00000050; }
+.case-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--cyber); opacity: 0; transition: opacity 0.2s; }
+.case-card:hover::before { opacity: 1; }
+.case-title { font-size: 16px; font-weight: 600; color: var(--cyber); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.case-meta { font-size: 11px; color: var(--t2); display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #ffffff0d; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <i class="ti ti-fingerprint" style="font-size: 40px; color: var(--cyber);"></i>
+        <div>
+            <h1>MOBILE MONEY TRIAGE</h1>
+            <p>Forensic Case Directory & Evidence Vault</p>
+        </div>
+    </div>
+
+    <div class="grid">
+        {% for case in cases %}
+        <a href="/case/{{ case }}" class="case-card">
+            <div class="case-title"><i class="ti ti-folder"></i> {{ case }}</div>
+            <div style="font-size: 11px; color: var(--t3);">Status: Evidence Extracted</div>
+            <div class="case-meta">
+                <span><i class="ti ti-device-mobile"></i> Android</span>
+                <span style="color: #22c55e;"><i class="ti ti-shield-check"></i> Verified</span>
+            </div>
+        </a>
+        {% else %}
+        <div style="color: var(--t3); font-size: 12px; grid-column: 1/-1; text-align: center; padding: 40px;">
+            No cases found. Run <code>python3 triage.py --case CASE_ID</code> to begin.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>

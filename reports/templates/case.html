@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Case {{ case_id }} — Raw Evidence</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@700&display=swap');
+:root {
+  --bg: #090b0e; --s1: #0f1318; --s2: #151a20; --s3: #1b2028;
+  --cyber: #00d4ff; --red: #ef4444; --green: #22c55e; --amber: #f59e0b;
+  --t1: #e2e8f0; --t2: #94a3b8; --t3: #475569;
+}
+body { background: var(--bg); color: var(--t1); font-family: 'JetBrains Mono', monospace; padding: 30px; }
+.container { max-width: 1100px; margin: 0 auto; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #ffffff18; padding-bottom: 15px; }
+.header h1 { font-family: 'Syne', sans-serif; font-size: 22px; letter-spacing: 1px; }
+.nav-links a { color: var(--cyber); text-decoration: none; font-size: 12px; margin-left: 20px; }
+.nav-links a:hover { text-decoration: underline; }
+
+.card { background: var(--s1); border: 1px solid #ffffff0d; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+.card-title { font-size: 11px; letter-spacing: 2px; color: var(--t3); text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+.card-title span.left { display: flex; align-items: center; gap: 8px; }
+
+/* Manifest */
+.manifest-box { background: #000000; color: #22c55e; padding: 15px; border-radius: 5px; font-size: 11px; overflow-x: auto; border: 1px solid #ffffff10; }
+
+/* Integrity Check */
+.integrity-list { list-style: none; padding: 0; }
+.integrity-list li { padding: 6px 0; font-size: 12px; border-bottom: 1px solid #ffffff05; }
+.integrity-list li:last-child { border-bottom: none; }
+.verified { color: var(--green); }
+.tampered { color: var(--red); }
+.btn-download { display: inline-flex; align-items: center; gap: 8px; background: #00d4ff15; border: 1px solid #00d4ff40; color: var(--cyber); padding: 10px 20px; border-radius: 5px; text-decoration: none; font-size: 12px; margin-top: 15px; transition: all 0.2s; }
+.btn-download:hover { background: #00d4ff30; }
+
+/* Search */
+.search-form { display: flex; gap: 10px; margin-bottom: 20px; }
+.search-form input { flex: 1; background: var(--s2); border: 1px solid #ffffff18; padding: 12px; color: var(--t1); border-radius: 5px; font-family: monospace; }
+.search-form input:focus { outline: none; border-color: var(--cyber); }
+.search-form button { background: var(--s3); border: 1px solid #ffffff18; color: var(--t1); padding: 0 20px; border-radius: 5px; cursor: pointer; }
+.search-form button:hover { background: var(--cyber); color: #000; }
+
+/* Message List */
+.msg-card { background: var(--s2); padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 4px solid var(--t3); }
+.msg-debit { border-left-color: var(--red); }
+.msg-credit { border-left-color: var(--green); }
+.msg-header { display: flex; justify-content: space-between; font-size: 10px; color: var(--t3); margin-bottom: 8px; }
+.msg-body { font-size: 12px; line-height: 1.5; }
+.msg-amount { margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--amber); }
+
+/* Pagination */
+.pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ffffff10; }
+.page-btn { background: var(--s2); border: 1px solid #ffffff18; color: var(--cyber); padding: 8px 16px; border-radius: 5px; text-decoration: none; font-size: 12px; transition: 0.2s; }
+.page-btn:hover { background: var(--cyber); color: #000; }
+.page-btn.disabled { color: var(--t3); border-color: #ffffff0d; pointer-events: none; background: var(--s1); }
+.page-info { font-size: 12px; color: var(--t2); }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>CASE: {{ case_id }}</h1>
+        <div class="nav-links">
+            <a href="/"><i class="ti ti-arrow-left"></i> Back to Cases</a>
+            <a href="/dashboard/{{ case_id }}" style="color: var(--amber); font-weight: bold;"><i class="ti ti-chart-pie"></i> Intelligence Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Integrity Check -->
+    <div class="card" style="border-left: 4px solid var(--green);">
+        <div class="card-title"><span class="left"><i class="ti ti-shield-check" style="color: var(--green);"></i> Forensic Integrity Check</span></div>
+        <ul class="integrity-list">
+            {% for res in integrity %}
+            <li class="{{ 'verified' if 'VERIFIED' in res else 'tampered' }}">{{ res }}</li>
+            {% endfor %}
+        </ul>
+        <a href="/generate_pdf/{{ case_id }}" class="btn-download"><i class="ti ti-file-download"></i> Download Court Report (PDF)</a>
+    </div>
+
+    <!-- Chain of Custody -->
+    <div class="card">
+        <div class="card-title"><span class="left"><i class="ti ti-link"></i> Chain of Custody (Manifest)</span></div>
+        <div class="manifest-box"><pre>{{ manifest | tojson(indent=2) }}</pre></div>
+    </div>
+
+    <!-- NEW: Call Logs -->
+    <div class="card">
+        <div class="card-title">
+            <span class="left"><i class="ti ti-phone-call"></i> Extracted Call Logs ({{ calls|length }})</span>
+        </div>
+        
+        {% if calls %}
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+            <thead>
+                <tr style="border-bottom: 1px solid #ffffff18; color: var(--t3);">
+                    <th style="padding: 10px;">Date & Time</th>
+                    <th style="padding: 10px;">Number</th>
+                    <th style="padding: 10px;">Type</th>
+                    <th style="padding: 10px;">Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for call in calls[:20] %}
+                <tr style="border-bottom: 1px solid #ffffff0d;">
+                    <td style="padding: 10px; color: var(--t2);">{{ call.timestamp[:19].replace('T', ' ') }}</td>
+                    <td style="padding: 10px; color: var(--cyber);">{{ call.number }}</td>
+                    <td style="padding: 10px;">
+                        {% if call.type == 'Outgoing' %}<span style="color: var(--green);"><i class="ti ti-arrow-up-right"></i> Outgoing</span>
+                        {% elif call.type == 'Incoming' %}<span style="color: var(--cyber);"><i class="ti ti-arrow-down-left"></i> Incoming</span>
+                        {% else %}<span style="color: var(--red);"><i class="ti ti-phone-off"></i> Missed</span>{% endif %}
+                    </td>
+                    <td style="padding: 10px; color: var(--t2);">{{ call.duration_sec }} sec</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if calls|length > 20 %}
+        <div style="margin-top: 10px; font-size: 10px; color: var(--t3); text-align: center;">
+            Showing latest 20 calls. Full list available in PDF export.
+        </div>
+        {% endif %}
+        {% else %}
+        <div style="color: var(--t3); font-size: 12px;">No call logs found for this case.</div>
+        {% endif %}
+    </div>
+
+    <!-- Extracted Messages -->
+    <div class="card">
+        <div class="card-title">
+            <span class="left"><i class="ti ti-message-2"></i> Extracted Financial Messages</span>
+            <span style="color: var(--cyber); font-weight: bold; font-size: 12px;">
+                Showing {{ start_idx }} - {{ end_idx }} of {{ total_messages }}
+            </span>
+        </div>
+        
+        <form action="/search/{{ case_id }}" method="GET" class="search-form">
+            <input type="text" name="q" placeholder="Search messages (e.g. 'Patrick', '10000')">
+            <button type="submit"><i class="ti ti-search"></i> Search</button>
+        </form>
+
+        {% for msg in messages %}
+        <div class="msg-card {{ 'msg-debit' if msg.type == 'debit' else 'msg-credit' }}">
+            <div class="msg-header">
+                <span><i class="ti ti-clock"></i> {{ msg.timestamp[:19].replace('T', ' ') }}</span>
+                <span><i class="ti ti-antenna"></i> {{ msg.telecom or 'Unknown' }} | {{ msg.direction | upper }} | ID: {{ msg.id }}</span>
+            </div>
+            <div class="msg-body">{{ msg.body }}</div>
+            {% if msg.amounts %}
+            <div class="msg-amount"><i class="ti ti-cash"></i> UGX {{ msg.amounts | join(', ') }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- PAGINATION CONTROLS -->
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="/case/{{ case_id }}?page={{ page - 1 }}" class="page-btn"><i class="ti ti-chevron-left"></i> Previous</a>
+            {% else %}
+                <span class="page-btn disabled"><i class="ti ti-chevron-left"></i> Previous</span>
+            {% endif %}
+            
+            <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+            
+            {% if page < total_pages %}
+                <a href="/case/{{ case_id }}?page={{ page + 1 }}" class="page-btn">Next <i class="ti ti-chevron-right"></i></a>
+            {% else %}
+                <span class="page-btn disabled">Next <i class="ti ti-chevron-right"></i></span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+</body>
+</html>
